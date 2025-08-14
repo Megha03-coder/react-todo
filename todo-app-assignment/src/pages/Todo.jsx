@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import AddOrEdit from '../components/Todo/AddorEdit';
 import TodoList from '../components/Todo/Lists';
+import Calendar from '../components/Todo/Calendar';
 
 const STORAGE_KEY = 'todos';
 export default function TodoPage({ activeView }) {
@@ -45,6 +46,16 @@ export default function TodoPage({ activeView }) {
     if (editingTodo && editingTodo.id === id) setEditingTodo(null)
   }
 
+  const handleAddToCalendar = (taskId, date) => {
+    setTodos((prev) => 
+      prev.map((todo) => 
+        todo.id === taskId 
+          ? { ...todo, calendarDate: date }
+          : todo
+      )
+    )
+  }
+
   const renderContent = () => {
     switch (activeView) {
       case 'add':
@@ -73,11 +84,11 @@ export default function TodoPage({ activeView }) {
       case 'calendar':
         return (
           <div className="todo-section">
-            <h2>Add to Calendar</h2>
-            <div className="calendar-placeholder">
-              <p>📅 Calendar integration coming soon!</p>
-              <p>This feature will allow you to schedule your tasks and set reminders.</p>
-            </div>
+            <h2>Calendar - Schedule Your Tasks</h2>
+            <Calendar 
+              todos={todos} 
+              onAddToCalendar={handleAddToCalendar}
+            />
           </div>
         )
       
