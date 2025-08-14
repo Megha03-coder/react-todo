@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './Calendar.css';
 
 export default function Calendar({ todos, onAddToCalendar }) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -62,14 +63,18 @@ export default function Calendar({ todos, onAddToCalendar }) {
   return (
     <div className="calendar-container">
       <div className="calendar-header">
-        <button className="calendar-nav-btn" onClick={() => navigateMonth(-1)}>
-          ‹
+        <button className="calendar-nav-btn calendar-nav-prev" onClick={() => navigateMonth(-1)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
         </button>
         <h3 className="calendar-title">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h3>
-        <button className="calendar-nav-btn" onClick={() => navigateMonth(1)}>
-          ›
+        <button className="calendar-nav-btn calendar-nav-next" onClick={() => navigateMonth(1)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
         </button>
       </div>
 
@@ -91,13 +96,15 @@ export default function Calendar({ todos, onAddToCalendar }) {
             return (
               <div
                 key={index}
-                className={`calendar-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`}
+                className={`calendar-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${selectedDate && formatDate(selectedDate) === formatDate(date) ? 'selected' : ''}`}
                 onClick={() => handleDateClick(date)}
               >
                 <div className="calendar-day-number">{date.getDate()}</div>
                 {tasksForDate.length > 0 && (
-                  <div className="calendar-task-indicator">
-                    {tasksForDate.length} task{tasksForDate.length > 1 ? 's' : ''}
+                  <div className="calendar-task-dots">
+                    {tasksForDate.map((task, idx) => (
+                      <div key={idx} className="calendar-task-dot" title={task.title}></div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -107,31 +114,46 @@ export default function Calendar({ todos, onAddToCalendar }) {
       </div>
 
       {showTaskModal && (
-        <div className="calendar-modal">
-          <div className="calendar-modal-content">
-            <h4>Add Task to {selectedDate?.toLocaleDateString()}</h4>
+        <div className="calendar-modal-overlay" onClick={() => setShowTaskModal(false)}>
+          <div className="calendar-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="calendar-modal-header">
+              <h4>Schedule Task for {selectedDate?.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h4>
+              <button className="calendar-modal-close" onClick={() => setShowTaskModal(false)}>×</button>
+            </div>
+            
             <div className="calendar-task-list">
-              {todos.filter(todo => !todo.calendarDate).map(todo => (
-                <div key={todo.id} className="calendar-task-item">
-                  <span>{todo.title}</span>
-                  <button 
-                    className="btn btn-primary"
-                    onClick={() => handleAddTaskToDate(todo.id)}
-                  >
-                    Add
-                  </button>
+              <h5>Unscheduled Tasks</h5>
+              {todos.filter(todo => !todo.calendarDate).length > 0 ? (
+                todos.filter(todo => !todo.calendarDate).map(todo => (
+                  <div key={todo.id} className="calendar-task-item">
+                    <div className="calendar-task-info">
+                      <strong>{todo.title}</strong>
+                      {todo.description && <p>{todo.description}</p>}
+                    </div>
+                    <button 
+                      className="btn btn-primary calendar-add-btn"
+                      onClick={() => handleAddTaskToDate(todo.id)}
+                    >
+                      Schedule
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="calendar-empty-state">
+                  <p>🎉 All tasks are scheduled!</p>
+                  <p>Add new tasks from the "Add Task" section.</p>
                 </div>
-              ))}
-              {todos.filter(todo => !todo.calendarDate).length === 0 && (
-                <p>No unscheduled tasks available</p>
               )}
             </div>
-            <button 
-              className="btn btn-secondary"
-              onClick={() => setShowTaskModal(false)}
-            >
-              Close
-            </button>
+            
+            <div className="calendar-modal-footer">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowTaskModal(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
